@@ -2,6 +2,7 @@ package dial
 
 import (
 	"fmt"
+	"log"
 	"time"
 
 	"periph.io/x/conn/v3/gpio"
@@ -36,19 +37,22 @@ func readDial(latchPin, pulsePin *debouncer, ch chan<- int) {
 	for range ticks.C {
 		latch := bool(latchPin.Read())
 		pulse := bool(pulsePin.Read())
-
+		//log.Println(latch, pulse)
 		//latch goes low to signify dialing
 		if !dialing && !latch {
+			log.Println("LAT")
 			dialing = true
 			pulses = 0
 			pulsing = false
 		} else if dialing && latch {
+			log.Println("D", pulses)
 			dialing = false
 			ch <- pulses
 		}
 
 		// pulse goes high to signify pulse
 		if dialing && pulse && !pulsing {
+			log.Println("P")
 			pulsing = true
 			pulses++
 		} else if dialing && !pulse && pulsing {
