@@ -7,29 +7,30 @@ import (
 	"io"
 	"log"
 	"os"
+	"strconv"
+	"strings"
 
 	"github.com/golang/freetype/truetype"
 	"golang.org/x/image/font"
 	"golang.org/x/image/math/fixed"
 )
 
-const fontfile = "YacimientoExtraBoldEx.ttf"
-
-var textFont *truetype.Font
+var textFont = mustLoad("YacimientoExtraBoldEx.ttf")
 
 type Image struct {
 	img *image.Gray
 }
 
-func init() {
-	fontBytes, err := os.ReadFile(fontfile)
+func mustLoad(fname string) *truetype.Font {
+	fontBytes, err := os.ReadFile(fname)
 	if err != nil {
 		log.Fatal(err)
 	}
-	textFont, err = truetype.Parse(fontBytes)
+	f, err := truetype.Parse(fontBytes)
 	if err != nil {
 		log.Fatal(err)
 	}
+	return f
 }
 
 func New() *Image {
@@ -72,14 +73,86 @@ func (i *Image) TextCenter(size float64, y int, ss ...string) {
 	}
 }
 
+var dieFonts = map[string]*truetype.Font{
+	"{d20}": mustLoad("d20.ttf"),
+	"{d8}":  mustLoad("d8.ttf"),
+	"{d6}":  mustLoad("d6.ttf"),
+}
+
+var lookup = map[int]string{
+	1:  "A",
+	2:  "B",
+	3:  "C",
+	4:  "D",
+	5:  "E",
+	6:  "F",
+	7:  "G",
+	8:  "H",
+	9:  "I",
+	10: "J",
+	11: "K",
+	12: "L",
+	13: "M",
+	14: "N",
+	15: "O",
+	16: "P",
+	17: "Q",
+	18: "R",
+	19: "S",
+	20: "T",
+}
+
+func (i *Image) TextCenterRows(sizeA float64, yA int, sizeB float64, yB int, textA []string, textB []string) {
+	widthsA := make([]fixed.Int26_6, len(textA))
+	widthsB := make([]fixed.Int26_6, len(textB))
+	total := fixed.Int26_6(0)
+	facesA := make([]*truetype.Font, len(textA))
+	sizesA := make([]float64, len(textA))
+	for ix, s := range textA {
+		facesA[ix] = textFont
+		sizesA[ix] = sizeA
+		for key, face := range dieFonts {
+			if strings.HasPrefix(s, key) {
+				facesA[ix] = face
+				textA[ix] = strings.TrimPrefix(s, key)
+				num, err := strconv.Atoi(textA[ix])
+				if err == nil {
+					textA[ix] = lookup[num]
+				}
+				sizesA[ix] *= 1.5
+				break
+			}
+		}
+		w := i.MeasureF(textA[ix], sizesA[ix], facesA[ix])
+		w2 := i.Measure(textB[ix], sizeB)
+		widthsA[ix] = w
+		widthsB[ix] = w2
+		total += w
+	}
+	spacer := (Totwidth - total) / (fixed.Int26_6(len(textA)) + 1)
+	xpos := spacer
+	for ix, s := range textA {
+		point := fixed.Point26_6{xpos, fixed.Int26_6(yA * 64)}
+		i.TextPointF(s, sizesA[ix], point, facesA[ix])
+		xpos2 := xpos + widthsA[ix]/2 - widthsB[ix]/2
+		point2 := fixed.Point26_6{xpos2, fixed.Int26_6(yB * 64)}
+		i.TextPoint(textB[ix], sizeB, point2)
+		xpos += widthsA[ix] + spacer
+	}
+}
+
 func (i *Image) TextPoint(s string, size float64, point fixed.Point26_6) {
+	i.TextPointF(s, size, point, textFont)
+}
+
+func (i *Image) TextPointF(s string, size float64, point fixed.Point26_6, face *truetype.Font) {
 	col := color.Gray{0}
 
 	d := &font.Drawer{
 		Dst: i.img,
 		Src: image.NewUniform(col),
 		Face: truetype.NewFace(
-			textFont, &truetype.Options{
+			face, &truetype.Options{
 				Size:    size,
 				DPI:     72,
 				Hinting: font.HintingFull,
@@ -91,13 +164,17 @@ func (i *Image) TextPoint(s string, size float64, point fixed.Point26_6) {
 }
 
 func (i *Image) Measure(s string, size float64) fixed.Int26_6 {
+	return i.MeasureF(s, size, textFont)
+}
+
+func (i *Image) MeasureF(s string, size float64, face *truetype.Font) fixed.Int26_6 {
 	col := color.Gray{0}
 
 	d := &font.Drawer{
 		Dst: i.img,
 		Src: image.NewUniform(col),
 		Face: truetype.NewFace(
-			textFont, &truetype.Options{
+			face, &truetype.Options{
 				Size:    size,
 				DPI:     72,
 				Hinting: font.HintingFull,

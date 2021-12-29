@@ -1,6 +1,7 @@
 package screens
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/captncraig/dial-a-die/pkg/drawing"
@@ -35,9 +36,23 @@ func (h HomeScreen) Render(img *drawing.Image) {
 	img.Text("+5", 18, xalign, 200)
 	img.Text("19", 18, xalign, 220)
 
+	// hp
 	img.TextRight("45", 40, 80)
 	img.TextRight("/60", 40, 120)
 
+	// bottom menu
+	menuSize := float64(16)
+	menuSpacing := 15
+	for i, text := range []string{"Actions", "Saves", "Checks", "Spells", "HP/Rest", ""} {
+		row := i / 2
+		txt := fmt.Sprintf("%d: %s", i+1, text)
+		y := 300 + menuSpacing*row
+		if i%2 == 0 {
+			img.Text(txt, menuSize, 0, y)
+		} else {
+			img.TextRight(txt+"  ", menuSize, y)
+		}
+	}
 }
 
 func (h HomeScreen) OnDial(d int) Screen {
@@ -46,7 +61,16 @@ func (h HomeScreen) OnDial(d int) Screen {
 	case 1:
 		//actions
 	case 2:
-		return RollResultsScreen{}
+		return RollResultsScreen{
+			Title:            "Booming Blade",
+			Subtitle:         "(Sneak, Hex, Adv)",
+			MainNumbers:      []string{"29", "26"},
+			MainTitles:       []string{"Hit", "Damage"},
+			SecondaryNumbers: []string{"8", "8", "5", "2", "3"},
+			SecondaryTitles:  []string{"Slash", "Sneak", "Zap", "Nec", "Blud"},
+			Details:          []string{"{d20}20", "{d20}1", "+9", "{d8}2", "+6", "3", "{d8}5", "{d6}2", "{d6}6", "{d6}2"},
+			DetailText:       []string{"Atk", "Adv", "Atk", "Dmg", "Dmg", "Blud", "Boom", "Snk", "Snk", "Hex"},
+		}
 		//saves
 	case 3:
 		// checks

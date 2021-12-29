@@ -6,19 +6,51 @@ import (
 	"github.com/captncraig/dial-a-die/pkg/drawing"
 )
 
-type RollResultsScreen struct{}
+type RollResultsScreen struct {
+	Title            string
+	Subtitle         string
+	MainNumbers      []string
+	MainTitles       []string
+	SecondaryNumbers []string
+	SecondaryTitles  []string
+	Details          []string
+	DetailText       []string
+}
 
-func (h RollResultsScreen) Render(img *drawing.Image) {
-	log.Println("RR RENDER")
-	img.TextCenter(20, 20, "Booming Blade")
-	img.TextCenter(20, 40, "(Sneak Hex)")
+func (s RollResultsScreen) Render(img *drawing.Image) {
+	img.TextCenter(20, 20, s.Title)
+	img.TextCenter(20, 40, s.Subtitle)
 
-	img.TextCenter(50, 100, "23", "113")
-	img.TextCenter(18, 120, "To Hit", "Damage")
+	img.TextCenterRows(50, 100, 18, 120, s.MainNumbers, s.MainTitles)
 
-	img.TextCenter(30, 160, "15", "23", "5", "6", "3")
-	img.TextCenter(18, 180, "Prc", "Snk", "Zap", "Nex", "Blu")
+	img.TextCenterRows(30, 160, 12, 180, s.SecondaryNumbers, s.SecondaryTitles)
 
+	inRow := 5
+	y1 := 230
+	y2 := 250
+	offset := 50
+	d := s.Details
+	t := s.DetailText
+	for len(d) > 0 {
+		row1 := d
+		row2 := t
+		if len(d) > inRow {
+			row1 = d[:inRow]
+			d = d[inRow:]
+			row2 = t[:inRow]
+			t = t[inRow:]
+		} else {
+			d = nil
+			t = nil
+		}
+		img.TextCenterRows(24, y1, 14, y2, row1, row2)
+		y1 += offset
+		y2 += offset
+	}
+
+	for i := 0; i < len(s.Details); i += inRow {
+
+	}
 }
 
 func (h RollResultsScreen) OnDial(d int) Screen {
