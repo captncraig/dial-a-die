@@ -67,11 +67,11 @@ func (h HomeScreen) OnDial(d int) Screen {
 		return RollResultsScreen{
 			Title:            "Booming Blade",
 			Subtitle:         "(Sneak, Hex, Adv)",
-			MainNumbers:      []string{"29", "26"},
+			MainNumbers:      []string{"29!", "26"},
 			MainTitles:       []string{"Hit", "Damage"},
 			SecondaryNumbers: []string{"8", "8", "5", "2", "3"},
 			SecondaryTitles:  []string{"Slash", "Sneak", "Zap", "Nec", "Blud"},
-			Details:          []string{"{d20}20", "{d20}1", "+9", "{d8}2", "+6", "3", "{d8}5", "{d6}2", "{d6}6", "{d6}2"},
+			Details:          []string{"¤20", "¤1", "+9", "#2", "+6", "+3", "#5", "*2", "*6", "*2"},
 			DetailText:       []string{"Atk", "Adv", "Atk", "Dmg", "Dmg", "Blud", "Boom", "Snk", "Snk", "Hex"},
 		}
 		//saves

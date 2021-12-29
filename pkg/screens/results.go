@@ -28,7 +28,7 @@ func (s RollResultsScreen) Render(img *drawing.Image) {
 	inRow := 5
 	y1 := 240
 	y2 := 260
-	offset := 80
+	offset := 45
 	d := s.Details
 	t := s.DetailText
 	for len(d) > 0 {
