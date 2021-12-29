@@ -26,9 +26,9 @@ func (s RollResultsScreen) Render(img *drawing.Image) {
 	img.TextCenterRows(30, 160, 12, 180, s.SecondaryNumbers, s.SecondaryTitles)
 
 	inRow := 5
-	y1 := 230
-	y2 := 250
-	offset := 60
+	y1 := 240
+	y2 := 260
+	offset := 80
 	d := s.Details
 	t := s.DetailText
 	for len(d) > 0 {

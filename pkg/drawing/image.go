@@ -119,7 +119,7 @@ func (i *Image) TextCenterRows(sizeA float64, yA int, sizeB float64, yB int, tex
 				if err == nil {
 					textA[ix] = lookup[num]
 				}
-				sizesA[ix] *= 2
+				sizesA[ix] *= 3
 				break
 			}
 		}
