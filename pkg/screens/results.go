@@ -25,10 +25,13 @@ func (s RollResultsScreen) Render(img *drawing.Image) {
 
 	img.TextCenterRows(30, 160, 12, 180, s.SecondaryNumbers, s.SecondaryTitles)
 
+	for len(s.DetailText) < len(s.Details) {
+		s.DetailText = append(s.DetailText, "")
+	}
 	inRow := 5
 	y1 := 240
 	y2 := 260
-	offset := 45
+	offset := 50
 	d := s.Details
 	t := s.DetailText
 	for len(d) > 0 {
@@ -43,7 +46,7 @@ func (s RollResultsScreen) Render(img *drawing.Image) {
 			d = nil
 			t = nil
 		}
-		img.TextCenterRows(24, y1, 14, y2, row1, row2)
+		img.TextCenterRows(25, y1, 17, y2, row1, row2)
 		y1 += offset
 		y2 += offset
 	}
