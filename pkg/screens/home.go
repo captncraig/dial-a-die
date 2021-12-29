@@ -43,10 +43,13 @@ func (h HomeScreen) Render(img *drawing.Image) {
 	// bottom menu
 	menuSize := float64(16)
 	menuSpacing := 15
-	for i, text := range []string{"Actions", "Saves", "Checks", "Spells", "HP/Rest", ""} {
+	for i, text := range []string{"Actions", "Saves", "Checks", "Spells", "HP/Rest", "Dice", "", "", "Reference", "Chars"} {
+		if text == "" {
+			continue
+		}
 		row := i / 2
 		txt := fmt.Sprintf("%d: %s", i+1, text)
-		y := 300 + menuSpacing*row
+		y := 330 + menuSpacing*row
 		if i%2 == 0 {
 			img.Text(txt, menuSize, 0, y)
 		} else {
