@@ -75,7 +75,7 @@ func (i *Image) TextCenterRows(sizeA float64, yA int, sizeB float64, yB int, tex
 	widthsA := make([]fixed.Int26_6, len(textA))
 	widthsB := make([]fixed.Int26_6, len(textB))
 	total := fixed.Int26_6(0)
-	for ix, s := range textA {
+	for ix := range textA {
 		w := i.Measure(textA[ix], sizeA)
 		w2 := i.Measure(textB[ix], sizeB)
 		widthsA[ix] = w

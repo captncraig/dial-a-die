@@ -2,7 +2,6 @@ package screens
 
 import (
 	"fmt"
-	"log"
 	"math/rand"
 
 	"github.com/captncraig/dial-a-die/pkg/drawing"
@@ -17,6 +16,25 @@ type RollResultsScreen struct {
 	SecondaryTitles  []string
 	Details          []string
 	DetailText       []string
+
+	f func(rrs *RollResultsScreen)
+}
+
+func NewRollResults(f func(rrs *RollResultsScreen)) *RollResultsScreen {
+	rrs := &RollResultsScreen{f: f}
+	f(rrs)
+	return rrs
+}
+
+func (s *RollResultsScreen) clear() {
+	s.Title = ""
+	s.Subtitle = ""
+	s.MainNumbers = nil
+	s.MainTitles = nil
+	s.SecondaryNumbers = nil
+	s.SecondaryTitles = nil
+	s.Details = nil
+	s.DetailText = nil
 }
 
 func (s *RollResultsScreen) Render(img *drawing.Image) {
@@ -53,13 +71,17 @@ func (s *RollResultsScreen) Render(img *drawing.Image) {
 		y2 += offset
 	}
 
-	for i := 0; i < len(s.Details); i += inRow {
+	img.TextRight("1: reroll", 15, 375)
+	img.TextRight("*: home", 15, 390)
 
-	}
 }
 
 func (h *RollResultsScreen) OnDial(d int) Screen {
-	log.Println("RR DIAL")
+	if d == 1 {
+		h.clear()
+		h.f(h)
+		return h
+	}
 	return nil
 }
 

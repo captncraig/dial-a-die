@@ -40,6 +40,10 @@ func (h HomeScreen) Render(img *drawing.Image) {
 	img.TextRight("45", 40, 80)
 	img.TextRight("/60", 40, 120)
 
+	// spell slots ¤×
+	img.TextRight("ss ¤×", 16, 150)
+	img.TextRight("misty ¤¤×××", 16, 175)
+
 	// bottom menu
 	menuSize := float64(16)
 	menuSpacing := 15
@@ -64,31 +68,30 @@ func (h HomeScreen) OnDial(d int) Screen {
 	case 1:
 		//actions
 	case 2:
+		return NewRollResults(func(rrs *RollResultsScreen) {
+			rrs.Title = "Booming Blade"
+			rrs.Subtitle = "(Sneak, Hex, Adv)"
+			a := rrs.Roll(20, "Atk")
+			b := rrs.Roll(20, "Adv")
+			// apply advantage
+			if b > a {
+				a = b
+			}
+			rrs.AddMod(9, "Atk")
+			rrs.AddMain(a+9, "To Hit", a == 20)
+			slash := rrs.Roll(8, "Atk") + rrs.AddMod(6, "Dmg")
+			bludgeoning := rrs.AddMod(3, "Blg")
+			boom := rrs.Roll(8, "Boom")
+			hex := rrs.Roll(6, "Hex")
+			sneak := rrs.Roll(6, "Snk") + rrs.Roll(6, "Snk")
+			rrs.AddMain(slash+bludgeoning+boom+hex+sneak, "Damage", false)
+			rrs.AddSecondary(slash, "Slsh")
+			rrs.AddSecondary(bludgeoning, "Blg")
+			rrs.AddSecondary(boom, "Boom")
+			rrs.AddSecondary(hex, "Nec")
+			rrs.AddSecondary(sneak, "snk")
+		})
 
-		rrs := &RollResultsScreen{
-			Title:    "Booming Blade",
-			Subtitle: "(Sneak, Hex, Adv)",
-		}
-		a := rrs.Roll(20, "Atk")
-		b := rrs.Roll(20, "Adv")
-		// apply advantage
-		if b > a {
-			a = b
-		}
-		rrs.AddMod(9, "Atk")
-		rrs.AddMain(a+9, "To Hit", a == 20)
-		slash := rrs.Roll(8, "Atk") + rrs.AddMod(6, "Dmg")
-		bludgeoning := rrs.AddMod(3, "Blg")
-		boom := rrs.Roll(8, "Boom")
-		hex := rrs.Roll(6, "Hex")
-		sneak := rrs.Roll(6, "Snk") + rrs.Roll(6, "Snk")
-		rrs.AddMain(slash+bludgeoning+boom+hex+sneak, "Damage", false)
-		rrs.AddSecondary(slash, "Slsh")
-		rrs.AddSecondary(bludgeoning, "Blg")
-		rrs.AddSecondary(boom, "Boom")
-		rrs.AddSecondary(hex, "Nec")
-		rrs.AddSecondary(sneak, "snk")
-		return rrs
 		//saves
 	case 3:
 		// checks
