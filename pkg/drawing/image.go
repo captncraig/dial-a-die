@@ -7,8 +7,6 @@ import (
 	"io"
 	"log"
 	"os"
-	"strconv"
-	"strings"
 
 	"github.com/golang/freetype/truetype"
 	"golang.org/x/image/font"
@@ -73,57 +71,12 @@ func (i *Image) TextCenter(size float64, y int, ss ...string) {
 	}
 }
 
-var dieFonts = map[string]*truetype.Font{
-	"{d20}": mustLoad("d20.ttf"),
-	"{d8}":  mustLoad("d8.ttf"),
-	"{d6}":  mustLoad("d6.ttf"),
-}
-
-var lookup = map[int]string{
-	1:  "a",
-	2:  "b",
-	3:  "c",
-	4:  "d",
-	5:  "e",
-	6:  "f",
-	7:  "g",
-	8:  "h",
-	9:  "i",
-	10: "j",
-	11: "k",
-	12: "l",
-	13: "m",
-	14: "n",
-	15: "o",
-	16: "p",
-	17: "q",
-	18: "r",
-	19: "s",
-	20: "t",
-}
-
 func (i *Image) TextCenterRows(sizeA float64, yA int, sizeB float64, yB int, textA []string, textB []string) {
 	widthsA := make([]fixed.Int26_6, len(textA))
 	widthsB := make([]fixed.Int26_6, len(textB))
 	total := fixed.Int26_6(0)
-	facesA := make([]*truetype.Font, len(textA))
-	sizesA := make([]float64, len(textA))
 	for ix, s := range textA {
-		facesA[ix] = textFont
-		sizesA[ix] = sizeA
-		for key, face := range dieFonts {
-			if strings.HasPrefix(s, key) {
-				facesA[ix] = face
-				textA[ix] = strings.TrimPrefix(s, key)
-				num, err := strconv.Atoi(textA[ix])
-				if err == nil {
-					textA[ix] = lookup[num]
-				}
-				sizesA[ix] *= 3
-				break
-			}
-		}
-		w := i.MeasureF(textA[ix], sizesA[ix], facesA[ix])
+		w := i.Measure(textA[ix], sizeA)
 		w2 := i.Measure(textB[ix], sizeB)
 		widthsA[ix] = w
 		widthsB[ix] = w2
@@ -133,7 +86,7 @@ func (i *Image) TextCenterRows(sizeA float64, yA int, sizeB float64, yB int, tex
 	xpos := spacer
 	for ix, s := range textA {
 		point := fixed.Point26_6{xpos, fixed.Int26_6(yA * 64)}
-		i.TextPointF(s, sizesA[ix], point, facesA[ix])
+		i.TextPoint(s, sizeA, point)
 		xpos2 := xpos + widthsA[ix]/2 - widthsB[ix]/2
 		point2 := fixed.Point26_6{xpos2, fixed.Int26_6(yB * 64)}
 		i.TextPoint(textB[ix], sizeB, point2)
