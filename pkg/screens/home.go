@@ -41,8 +41,8 @@ func (h HomeScreen) Render(img *drawing.Image) {
 	img.TextRight("/60", 40, 120)
 
 	// spell slots ¤×
-	img.TextRight("ss ¤×", 16, 150)
-	img.TextRight("misty ¤¤×××", 16, 175)
+	img.TextRight("ss: 1/2", 18, 150)
+	img.TextRight("misty: 4/5", 18, 175)
 
 	// bottom menu
 	menuSize := float64(16)
