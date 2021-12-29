@@ -64,16 +64,31 @@ func (h HomeScreen) OnDial(d int) Screen {
 	case 1:
 		//actions
 	case 2:
-		return RollResultsScreen{
-			Title:            "Booming Blade",
-			Subtitle:         "(Sneak, Hex, Adv)",
-			MainNumbers:      []string{"29!", "26"},
-			MainTitles:       []string{"Hit", "Damage"},
-			SecondaryNumbers: []string{"8", "8", "5", "2", "3"},
-			SecondaryTitles:  []string{"Slash", "Sneak", "Zap", "Nec", "Blud"},
-			Details:          []string{"¤20", "¤1", "+9", "#2", "+6", "+3", "#5", "*2", "*6", "*2"},
-			DetailText:       []string{"Atk", "Adv", "Atk", "Dmg", "Dmg", "Blud", "Boom", "Snk", "Snk", "Hex"},
+
+		rrs := &RollResultsScreen{
+			Title:    "Booming Blade",
+			Subtitle: "(Sneak, Hex, Adv)",
 		}
+		a := rrs.Roll(20, "Atk")
+		b := rrs.Roll(20, "Adv")
+		// apply advantage
+		if b > a {
+			a = b
+		}
+		rrs.AddMod(9, "Atk")
+		rrs.AddMain(a+9, "To Hit", a == 20)
+		slash := rrs.Roll(8, "Atk") + rrs.AddMod(6, "Dmg")
+		bludgeoning := rrs.AddMod(3, "Wrath")
+		boom := rrs.Roll(8, "Boom")
+		hex := rrs.Roll(6, "Hex")
+		sneak := rrs.Roll(6, "Snk") + rrs.Roll(6, "Snk")
+		rrs.AddMain(slash+bludgeoning+boom+hex+sneak, "Damage", false)
+		rrs.AddSecondary(slash, "slsh")
+		rrs.AddSecondary(bludgeoning, "blg")
+		rrs.AddSecondary(boom, "boom")
+		rrs.AddSecondary(hex, "nec")
+		rrs.AddSecondary(sneak, "snk")
+		return rrs
 		//saves
 	case 3:
 		// checks
