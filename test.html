@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script>  
+function updateImage() {
+    console.log("100")
+    var img = document.getElementById("iii");
+    img.src = "http://localhost:8080/img?t=" + new Date().getTime();
+    setTimeout(updateImage, 1000);
+};
+setTimeout(updateImage, 1000);
+</script>
+<style>
+    img {
+  border: 5px solid #555;
+}
+</style>
+</head>
+<body>
+<img id="iii" src="http://localhost:8080/img">
+<button>0</button>
+<button>1</button>
+<button>2</button>
+<button>3</button>
+<button>4</button>
+<button>5</button>
+<button>6</button>
+<button>7</button>
+<button>8</button>
+<button>9</button>
+<button>10</button>
+<script>
+    $("button").click(function(){
+        $.get("http://localhost:8080/poke?d="+$(this).text());
+    })
+</script>
+</body>
+</html>

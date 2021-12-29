@@ -3,6 +3,8 @@ package drawing
 import (
 	"image"
 	"image/color"
+	"image/png"
+	"io"
 	"log"
 	"os"
 
@@ -108,7 +110,9 @@ func (i *Image) Measure(s string, size float64) fixed.Int26_6 {
 func (i *Image) Circle(x, y, d int) {
 
 }
-
+func (i *Image) RenderPng(w io.Writer) error {
+	return png.Encode(w, i.img)
+}
 func (i *Image) Save() (string, error) {
 	f, err := os.CreateTemp(os.TempDir(), "img")
 	if err != nil {

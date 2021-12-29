@@ -13,18 +13,17 @@ var BounceDelay = 5 * time.Millisecond
 var LatchPinNum = 12
 var PulsePinNum = 16
 
-func Init() (<-chan int, error) {
+func Init(ch chan<- int) error {
 	latchPin, err := newDebouncer(LatchPinNum)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	pulsePin, err := newDebouncer(PulsePinNum)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	ch := make(chan int)
 	go readDial(latchPin, pulsePin, ch)
-	return ch, nil
+	return nil
 }
 
 func readDial(latchPin, pulsePin *debouncer, ch chan<- int) {
