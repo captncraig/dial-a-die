@@ -22,6 +22,8 @@ type PC struct {
 
 	Skills    []string
 	Expertise []string
+
+	Misty int
 }
 
 func (p *PC) Mod(skill string) int {

@@ -11,15 +11,16 @@ import (
 	"github.com/captncraig/dial-a-die/pkg/drawing"
 )
 
+var PC *character.PC
+
 type HomeScreen struct {
-	PC *character.PC
 }
 
 func (h HomeScreen) Render(img *drawing.Image) {
 	log.Println("Home Screen Render!")
 
-	img.TextCenter(20, 20, h.PC.FirstName)
-	img.TextCenter(20, 40, h.PC.LastName)
+	img.TextCenter(20, 20, PC.FirstName)
+	img.TextCenter(20, 40, PC.LastName)
 
 	img.Text("STR:", 18, 0, 60)
 	img.Text("DEX:", 18, 0, 80)
@@ -43,12 +44,12 @@ func (h HomeScreen) Render(img *drawing.Image) {
 	img.Text("19", 18, xalign, 220)
 
 	// hp
-	img.TextRight(fmt.Sprint(h.PC.HP), 40, 80)
-	img.TextRight(fmt.Sprintf("/%d", h.PC.HPMax), 40, 120)
+	img.TextRight(fmt.Sprint(PC.HP), 40, 80)
+	img.TextRight(fmt.Sprintf("/%d", PC.HPMax), 40, 120)
 
 	// spell slots ¤×
-	img.TextRight(fmt.Sprintf("ss: %d/%d", h.PC.SpellSlots, h.PC.SpellSlotsMax), 18, 150)
-	img.TextRight("misty: 4/5", 18, 175)
+	img.TextRight(fmt.Sprintf("ss: %d/%d", PC.SpellSlots, PC.SpellSlotsMax), 18, 150)
+	img.TextRight(fmt.Sprintf("misty: %d/5", PC.Misty), 18, 175)
 
 	// bottom menu
 	menuSize := float64(16)
@@ -73,66 +74,94 @@ func (h HomeScreen) OnDial(d int) Screen {
 	switch d {
 	case 1:
 		//actions
-		return NewRollResults(func(rrs *RollResultsScreen) {
-			rrs.Title = "Booming Blade"
-			a := rrs.Roll(20, "Atk")
+		mis := []*MenuItem{
+			{title: "ATTACK!", f2: func() Screen {
+				return NewRollResults(func(rrs *RollResultsScreen) {
+					rrs.Title = "Booming Blade"
+					a := rrs.Roll(20, "Atk")
 
-			rrs.AddMod(9, "Atk")
-			rrs.AddMain(a+9, "To Hit", a == 20)
-			slash := rrs.Roll(8, "Atk") + rrs.AddMod(6, "Dmg")
-			bludgeoning := rrs.AddMod(3, "Blg")
-			boom := rrs.Roll(8, "Boom")
-			rrs.AddMain(slash+bludgeoning+boom, "Damage", false)
-			rrs.AddSecondary(slash, "Slsh")
-			rrs.AddSecondary(bludgeoning, "Blg")
-			rrs.AddSecondary(boom, "Boom")
+					rrs.AddMod(9, "Atk")
+					rrs.AddMain(a+9, "To Hit", a == 20)
+					slash := rrs.Roll(8, "Atk") + rrs.AddMod(6, "Dmg")
+					bludgeoning := rrs.AddMod(3, "Blg")
+					boom := rrs.Roll(8, "Boom")
+					rrs.AddMain(slash+bludgeoning+boom, "Damage", false)
+					rrs.AddSecondary(slash, "Slsh")
+					rrs.AddSecondary(bludgeoning, "Blg")
+					rrs.AddSecondary(boom, "Boom")
 
-		},
-			[]rollfunc{
-				func(rrs *RollResultsScreen) {
-					d := rrs.Roll(20, "Adv")
-					if d > rrs.Rolls[0] {
-						diff := d - rrs.Rolls[0]
-						topnum, _ := strconv.Atoi(strings.TrimSuffix(rrs.MainNumbers[0], "!"))
-						newVal := fmt.Sprint(topnum + diff)
-						if d == 20 {
-							newVal += "!"
+				}, []rollfunc{
+					func(rrs *RollResultsScreen) {
+						d := rrs.Roll(20, "Adv")
+						if d > rrs.Rolls[0] {
+							diff := d - rrs.Rolls[0]
+							topnum, _ := strconv.Atoi(strings.TrimSuffix(rrs.MainNumbers[0], "!"))
+							newVal := fmt.Sprint(topnum + diff)
+							if d == 20 {
+								newVal += "!"
+							}
+							rrs.MainNumbers[0] = newVal
 						}
-						rrs.MainNumbers[0] = newVal
-					}
-					rrs.ops = rrs.ops[2:]
-					rrs.opnames = rrs.opnames[2:]
+						rrs.ops = rrs.ops[2:]
+						rrs.opnames = rrs.opnames[2:]
+					},
+					func(rrs *RollResultsScreen) {
+						d := rrs.Roll(20, "Dis")
+						if d < rrs.Rolls[0] {
+							diff := rrs.Rolls[0] - d
+							topnum, _ := strconv.Atoi(strings.TrimSuffix(rrs.MainNumbers[0], "!"))
+							newVal := fmt.Sprint(topnum - diff)
+							rrs.MainNumbers[0] = newVal
+						}
+						rrs.ops = rrs.ops[2:]
+						rrs.opnames = rrs.opnames[2:]
+					},
+					func(rrs *RollResultsScreen) {
+						sneak := rrs.Roll(6, "Snk") + rrs.Roll(6, "Snk")
+						rrs.AddSecondary(sneak, "snk")
+						topnum, _ := strconv.Atoi(rrs.MainNumbers[1])
+						rrs.MainNumbers[1] = fmt.Sprint(topnum + sneak)
+					},
+					func(rrs *RollResultsScreen) {
+						hex := rrs.Roll(6, "Hex")
+						rrs.AddSecondary(hex, "hex")
+						topnum, _ := strconv.Atoi(rrs.MainNumbers[1])
+						rrs.MainNumbers[1] = fmt.Sprint(topnum + hex)
+					},
 				},
-				func(rrs *RollResultsScreen) {
-					d := rrs.Roll(20, "Dis")
-					if d < rrs.Rolls[0] {
-						diff := rrs.Rolls[0] - d
-						topnum, _ := strconv.Atoi(strings.TrimSuffix(rrs.MainNumbers[0], "!"))
-						newVal := fmt.Sprint(topnum + diff)
-						rrs.MainNumbers[0] = newVal
-					}
-					rrs.ops = rrs.ops[2:]
-					rrs.opnames = rrs.opnames[2:]
-				},
-				func(rrs *RollResultsScreen) {
-					sneak := rrs.Roll(6, "Snk") + rrs.Roll(6, "Snk")
-					rrs.AddSecondary(sneak, "snk")
-					topnum, _ := strconv.Atoi(rrs.MainNumbers[1])
-					rrs.MainNumbers[1] = fmt.Sprint(topnum + sneak)
-				},
-				func(rrs *RollResultsScreen) {
-					hex := rrs.Roll(6, "Hex")
-					rrs.AddSecondary(hex, "hex")
-					topnum, _ := strconv.Atoi(rrs.MainNumbers[1])
-					rrs.MainNumbers[1] = fmt.Sprint(topnum + hex)
-				},
-			},
-			[]string{
-				"Advantage",
-				"Disadvantage",
-				"Sneak",
-				"Hex",
-			})
+					[]string{
+						"Advantage",
+						"Disadvantage",
+						"Sneak",
+						"Hex",
+					})
+			}},
+			{title: "Use Spell", f2: func() Screen {
+				PC.SpellSlots--
+				return nil
+			}},
+			{title: "Short Rest", f2: func() Screen {
+				PC.SpellSlots = PC.SpellSlotsMax
+				return nil
+			}},
+			{title: "Long Rest", f2: func() Screen {
+				PC.SpellSlots = PC.SpellSlotsMax
+				PC.HP = PC.HPMax
+				PC.Misty = 5
+				return nil
+			}},
+			{title: "Misty Step", f2: func() Screen {
+				PC.Misty--
+				return nil
+			}},
+			{title: "Initiative", f: func(rrs *RollResultsScreen) {
+				rrs.Title = "Initiative"
+				d := rrs.Roll(20, "1d20")
+				m := rrs.AddMod(PC.Dexterity, "Dex")
+				rrs.AddMain(d+m, "Initiative", d == 20)
+			}},
+		}
+		return NewMenu(mis...)
 	case 2:
 		//saves
 		attrs := []string{
@@ -144,9 +173,9 @@ func (h HomeScreen) OnDial(d int) Screen {
 			mis = append(mis, &MenuItem{title: attr, f: func(rrs *RollResultsScreen) {
 				rrs.Title = fmt.Sprintf("%s Save", attr)
 				d := rrs.Roll(20, "Save")
-				mod := h.PC.Mod(attr)
+				mod := PC.Mod(attr)
 				rrs.AddMod(mod, "Mod")
-				p := h.PC.SaveProficient(attr)
+				p := PC.SaveProficient(attr)
 				if p != 0 {
 					rrs.AddMod(p, "Pro")
 				}
@@ -164,12 +193,12 @@ func (h HomeScreen) OnDial(d int) Screen {
 				rrs.Title = fmt.Sprintf("%s(%s)", sk, attr)
 				rrs.Subtitle = "Check"
 				d := rrs.Roll(20, "Check")
-				mod := h.PC.Mod(attr)
-				p := h.PC.SkillProficient(sk)
+				mod := PC.Mod(attr)
+				p := PC.SkillProficient(sk)
 				if p != 0 {
 					rrs.AddMod(p, "Pro")
 				}
-				e := h.PC.ExpertiseMod(sk)
+				e := PC.ExpertiseMod(sk)
 				if e != 0 {
 					rrs.AddMod(p, "Exp")
 				}
@@ -183,6 +212,11 @@ func (h HomeScreen) OnDial(d int) Screen {
 		return NewMenu(mis...)
 	case 4:
 		// status(hp,money,rests)
+		mis := []*MenuItem{
+			{title: "Heal", f2: func() Screen { return &HPScreen{true} }},
+			{title: "Hurt", f2: func() Screen { return &HPScreen{false} }},
+		}
+		return NewMenu(mis...)
 	case 5:
 		// arbitrary dice
 		mis := []*MenuItem{}

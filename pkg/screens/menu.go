@@ -15,6 +15,7 @@ type MenuScreen struct {
 type MenuItem struct {
 	title string
 	f     rollfunc
+	f2    func() Screen
 }
 
 func NewMenu(mis ...*MenuItem) *MenuScreen {
@@ -65,5 +66,8 @@ func (h *MenuScreen) OnDial(d int) Screen {
 		return h
 	}
 	item := h.items[idx]
-	return NewRollResults(item.f, nil, nil)
+	if item.f != nil {
+		return NewRollResults(item.f, nil, nil)
+	}
+	return item.f2()
 }

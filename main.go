@@ -37,6 +37,7 @@ var dabbs = &character.PC{
 	Intelligence:  1,
 	Wisdom:        3,
 	Charisma:      3,
+	Misty:         5,
 
 	Proficiency: 4,
 	Saves:       []string{"Dexterity", "Intelligence"},
@@ -49,6 +50,7 @@ var dialChan chan int
 func main() {
 	flag.Parse()
 	dialChan = make(chan int)
+	screens.PC = dabbs
 	if !*web {
 		host.Init()
 		err := dial.Init(dialChan)
@@ -67,7 +69,7 @@ func main() {
 	go epdWorker()
 
 	stack := ScreenStack{}
-	stack.Push(screens.HomeScreen{PC: dabbs})
+	stack.Push(screens.HomeScreen{})
 
 	render(stack.Top())
 
