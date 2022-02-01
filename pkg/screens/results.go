@@ -20,7 +20,9 @@ type RollResultsScreen struct {
 	f func(rrs *RollResultsScreen)
 }
 
-func NewRollResults(f func(rrs *RollResultsScreen)) *RollResultsScreen {
+type rollfunc func(rrs *RollResultsScreen)
+
+func NewRollResults(f rollfunc) *RollResultsScreen {
 	rrs := &RollResultsScreen{f: f}
 	f(rrs)
 	return rrs

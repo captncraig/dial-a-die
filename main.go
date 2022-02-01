@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"sync"
 
+	"github.com/captncraig/dial-a-die/pkg/character"
 	"github.com/captncraig/dial-a-die/pkg/dial"
 	"github.com/captncraig/dial-a-die/pkg/drawing"
 	"github.com/captncraig/dial-a-die/pkg/screens"
@@ -21,6 +22,26 @@ var upgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool {
 		return true
 	},
+}
+
+var dabbs = &character.PC{
+	FirstName:     "Dabbledopp",
+	LastName:      "Fabblestabble",
+	HP:            65,
+	HPMax:         65,
+	SpellSlots:    2,
+	SpellSlotsMax: 2,
+	Strength:      0,
+	Dexterity:     5,
+	Constitution:  1,
+	Intelligence:  1,
+	Wisdom:        3,
+	Charisma:      3,
+
+	Proficiency: 4,
+	Saves:       []string{"Dexterity", "Intelligence"},
+	Skills:      []string{"Deception", "History", "Investigation", "Perception", "Sleight of Hand", "Survival"},
+	Expertise:   []string{"Investigation", "Perception"},
 }
 
 var dialChan chan int
@@ -46,7 +67,7 @@ func main() {
 	go epdWorker()
 
 	stack := ScreenStack{}
-	stack.Push(screens.HomeScreen{})
+	stack.Push(screens.HomeScreen{PC: dabbs})
 
 	render(stack.Top())
 
@@ -54,7 +75,9 @@ func main() {
 		log.Printf("DIALED %d", d)
 		nextScreen := stack.Top().OnDial(d)
 		if nextScreen == nil {
-			stack.Pop()
+			for len(stack.stack) > 1 {
+				stack.Pop()
+			}
 		} else if nextScreen != stack.Top() {
 			stack.Push(nextScreen)
 		}
