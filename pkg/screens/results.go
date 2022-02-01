@@ -16,14 +16,21 @@ type RollResultsScreen struct {
 	SecondaryTitles  []string
 	Details          []string
 	DetailText       []string
+	Rolls            []int
 
-	f func(rrs *RollResultsScreen)
+	f       func(rrs *RollResultsScreen)
+	ops     []rollfunc
+	opnames []string
 }
 
 type rollfunc func(rrs *RollResultsScreen)
 
-func NewRollResults(f rollfunc) *RollResultsScreen {
-	rrs := &RollResultsScreen{f: f}
+func NewRollResults(f rollfunc, ops []rollfunc, names []string) *RollResultsScreen {
+	rrs := &RollResultsScreen{
+		f:       f,
+		ops:     ops,
+		opnames: names,
+	}
 	f(rrs)
 	return rrs
 }
@@ -73,15 +80,43 @@ func (s *RollResultsScreen) Render(img *drawing.Image) {
 		y2 += offset
 	}
 
-	img.TextRight("1: reroll", 15, 375)
+	if len(s.ops) > 3 {
+		img.TextRight(fmt.Sprintf("6: %s", s.opnames[3]), 15, 315)
+	}
+	if len(s.ops) > 2 {
+		img.TextRight(fmt.Sprintf("5: %s", s.opnames[2]), 15, 330)
+	}
+	if len(s.ops) > 1 {
+		img.TextRight(fmt.Sprintf("4: %s", s.opnames[1]), 15, 345)
+	}
+	if len(s.ops) > 0 {
+		img.TextRight(fmt.Sprintf("3: %s", s.opnames[0]), 15, 360)
+	}
+	img.TextRight("2: reroll", 15, 375)
 	img.TextRight("*: home", 15, 390)
 
 }
 
 func (h *RollResultsScreen) OnDial(d int) Screen {
-	if d == 1 {
+	if d == 2 {
 		h.clear()
 		h.f(h)
+		return h
+	}
+	if d == 3 && len(h.ops) > 0 {
+		h.ops[0](h)
+		return h
+	}
+	if d == 4 && len(h.ops) > 1 {
+		h.ops[1](h)
+		return h
+	}
+	if d == 5 && len(h.ops) > 2 {
+		h.ops[2](h)
+		return h
+	}
+	if d == 6 && len(h.ops) > 3 {
+		h.ops[3](h)
 		return h
 	}
 	return nil
@@ -102,6 +137,7 @@ func (h *RollResultsScreen) Roll(n int, reason string) int {
 	}
 	h.Details = append(h.Details, fmt.Sprintf("%s%d", g, v))
 	h.DetailText = append(h.DetailText, reason)
+	h.Rolls = append(h.Rolls, v)
 	return v
 }
 

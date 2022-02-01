@@ -65,5 +65,5 @@ func (h *MenuScreen) OnDial(d int) Screen {
 		return h
 	}
 	item := h.items[idx]
-	return NewRollResults(item.f)
+	return NewRollResults(item.f, nil, nil)
 }

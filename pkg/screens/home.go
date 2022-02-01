@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"log"
 	"sort"
+	"strconv"
+	"strings"
 
 	"github.com/captncraig/dial-a-die/pkg/character"
 	"github.com/captncraig/dial-a-die/pkg/drawing"
@@ -73,27 +75,64 @@ func (h HomeScreen) OnDial(d int) Screen {
 		//actions
 		return NewRollResults(func(rrs *RollResultsScreen) {
 			rrs.Title = "Booming Blade"
-			rrs.Subtitle = "(Sneak, Hex, Adv)"
 			a := rrs.Roll(20, "Atk")
-			b := rrs.Roll(20, "Adv")
-			// apply advantage
-			if b > a {
-				a = b
-			}
+
 			rrs.AddMod(9, "Atk")
 			rrs.AddMain(a+9, "To Hit", a == 20)
 			slash := rrs.Roll(8, "Atk") + rrs.AddMod(6, "Dmg")
 			bludgeoning := rrs.AddMod(3, "Blg")
 			boom := rrs.Roll(8, "Boom")
-			hex := rrs.Roll(6, "Hex")
-			sneak := rrs.Roll(6, "Snk") + rrs.Roll(6, "Snk")
-			rrs.AddMain(slash+bludgeoning+boom+hex+sneak, "Damage", false)
+			rrs.AddMain(slash+bludgeoning+boom, "Damage", false)
 			rrs.AddSecondary(slash, "Slsh")
 			rrs.AddSecondary(bludgeoning, "Blg")
 			rrs.AddSecondary(boom, "Boom")
-			rrs.AddSecondary(hex, "Nec")
-			rrs.AddSecondary(sneak, "snk")
-		})
+
+		},
+			[]rollfunc{
+				func(rrs *RollResultsScreen) {
+					d := rrs.Roll(20, "Adv")
+					if d > rrs.Rolls[0] {
+						diff := d - rrs.Rolls[0]
+						topnum, _ := strconv.Atoi(strings.TrimSuffix(rrs.MainNumbers[0], "!"))
+						newVal := fmt.Sprint(topnum + diff)
+						if d == 20 {
+							newVal += "!"
+						}
+						rrs.MainNumbers[0] = newVal
+					}
+					rrs.ops = rrs.ops[2:]
+					rrs.opnames = rrs.opnames[2:]
+				},
+				func(rrs *RollResultsScreen) {
+					d := rrs.Roll(20, "Dis")
+					if d < rrs.Rolls[0] {
+						diff := rrs.Rolls[0] - d
+						topnum, _ := strconv.Atoi(strings.TrimSuffix(rrs.MainNumbers[0], "!"))
+						newVal := fmt.Sprint(topnum + diff)
+						rrs.MainNumbers[0] = newVal
+					}
+					rrs.ops = rrs.ops[2:]
+					rrs.opnames = rrs.opnames[2:]
+				},
+				func(rrs *RollResultsScreen) {
+					sneak := rrs.Roll(6, "Snk") + rrs.Roll(6, "Snk")
+					rrs.AddSecondary(sneak, "snk")
+					topnum, _ := strconv.Atoi(rrs.MainNumbers[1])
+					rrs.MainNumbers[1] = fmt.Sprint(topnum + sneak)
+				},
+				func(rrs *RollResultsScreen) {
+					hex := rrs.Roll(6, "Hex")
+					rrs.AddSecondary(hex, "hex")
+					topnum, _ := strconv.Atoi(rrs.MainNumbers[1])
+					rrs.MainNumbers[1] = fmt.Sprint(topnum + hex)
+				},
+			},
+			[]string{
+				"Advantage",
+				"Disadvantage",
+				"Sneak",
+				"Hex",
+			})
 	case 2:
 		//saves
 		attrs := []string{
